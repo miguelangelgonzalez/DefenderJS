@@ -1,0 +1,13 @@
+{
+  "name": "DefenderJS",
+  "version": "0.0.0",
+  "description": "DefenderJS",
+  "main": "server.js",
+  "author": {
+    "name": "Miguel",
+    "email": ""
+  },
+  "dependencies": {
+    "connect": "~2.13.0"
+  }
+}
