@@ -5,6 +5,11 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <Name>DefenderJS</Name>
     <RootNamespace>DefenderJS</RootNamespace>
+    <NodeExePath />
+    <NodeExeArguments />
+    <ScriptArguments />
+    <StartWebBrowser>True</StartWebBrowser>
+    <LaunchUrl>localhost:8080/index.html</LaunchUrl>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -40,7 +45,9 @@
     <Content Include="assets\level1.png" />
     <Content Include="assets\loader.png" />
     <Content Include="assets\logo.png" />
+    <Content Include="assets\Lost_Garden.png" />
     <Content Include="assets\simon.png" />
+    <Content Include="assets\StoneDefence.json" />
     <Content Include="assets\Thumbs.db" />
     <Content Include="assets\TileSet.png" />
     <Content Include="assets\title.mp3" />
