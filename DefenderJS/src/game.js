@@ -1,152 +1,108 @@
-var map;
-var sprite;
-var pathfinder;
-var pathSprite=[];
-var layer;
-var pathLayer;
-var block;
-var isBlocked;
+var Enemy = function(game, x, y, key) {
+    Phaser.Sprite.call(this, game, x, y, key);
+    game.add.existing(this);
+        this.body.collideWorldBounds = true;
+};
+Enemy.prototype = Object.create(Phaser.Sprite.prototype); 
+Enemy.prototype.constructor = Enemy;
 
-var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'content', { preload: preload, create: create, update: update, render: render });
+BasicGame.Game = function (game) {
+  this.map;
+  this.sprite;
+  this.pathfinder;
+  this.pathSprite=[];
+  this.layer;
+  this.pathLayer;
+  this.block;
+  this.isBlocked;
+  this.priorDistance=0;
+  this.once = true;
+};
 
-function preload() {
-
-	//Sprite
-	game.load.spritesheet('cubo', 'assets/sprite.png', 32, 32);
-    game.load.spritesheet('block', 'assets/block.png', 32, 32);
-	//TileSets
-	game.load.image("Lost_Garden", "assets/Lost_Garden.png");
-	//Map
-	game.load.tilemap("map", "assets/StoneDefence.json", null, Phaser.Tilemap.TILED_JSON);			
-}
-
-function create() {
-    
-    map = game.add.tilemap('map');
-	map.addTilesetImage('Lost_Garden');
+BasicGame.Game.prototype = {
+  create: function () {
+    this.map = this.game.add.tilemap('map');
+    this.map.addTilesetImage('Lost_Garden');
         
-    pathLayer = map.createLayer('bounds');	
-    layer = map.createLayer('background');	
-	
-	sprite = game.add.sprite(0, 320, 'cubo');
-    sprite.body.collideWorldBounds = true;
-	addNewBlock();
-    
-	pathfinder = game.plugins.add(Phaser.Plugin.PathFinderPlugin);
-    findPathTo(0, 10, 24, 13);
+    this.pathLayer = this.map.createLayer('bounds');  
+    this.layer = this.map.createLayer('background');  
+  
+    this.sprite = new Enemy(this.game, 0, 320, 'cubo');
+    this.addNewBlock();
+      
+    this.pathfinder = this.game.plugins.add(Phaser.Plugin.PathFinderPlugin);
+    this.findPathTo(0, 10, 24, 13);
 
-    game.physics.moveToObject(sprite, pathSprite[0]);
-    
-}
+    this.game.physics.moveToObject(this.sprite, this.pathSprite[0]);
+  },
+  update: function () {
+    var nextPoint = this.pathSprite[0];
 
-
-
-function addNewBlock() {
-        block = game.add.sprite(22*32, 15*32, 'block');
-    block.body.collideWorldBounds = true;
-    block.inputEnabled = true;
-        // Make this item draggable.
-        block.input.enableDrag();
-        
-        // Then we make it snap to left and right side,
-        // also we make it only snap when released.
-        block.input.enableSnap(32, 32, false, true);
-
-        // Limit drop location to only the 2 columns.
-        block.events.onDragStop.add(fixLocation);
-    //block.events.onDragStart(fixLocation);
-
-}
-
-function fixLocation(item) {
-    var tile = map.getTileWorldXY(item.x, item.y, 32, 32, pathLayer);
-    map.putTile(16, tile.x, tile.y, pathLayer);
-    map.putTile(16, tile.x, tile.y, layer);
-    //check if the path is blocked
-    if(_.findWhere(pathSprite, { tileX: tile.x, tileY: tile.y })) {
-        console.log('new path-> from x='+pathSprite[0].tileX+' y='+pathSprite[0].tileY+' TO x=24 y=13');
-        findPathTo(pathSprite[0].tileX, pathSprite[0].tileY, 24, 13);    
+    while(nextPoint)
+    {
+      if (this.game.physics.distanceBetween(nextPoint, this.sprite) > 1) break;
+      this.pathSprite = this.pathSprite.splice(1);
+      nextPoint = this.pathfinder[0];
     }
-    
-    //addNewBlock();
-}
 
-function blockSpriteSpeed() {
-    isBlocked = true;
-}
-function unBlockSpriteSpeed() {
-    isBlocked = false;
-}
-
-function findPathTo(startTileX, startTileY, endTileX, endTileY) {
-    
-	var walkables = [80];
-    blockSpriteSpeed();
-    
-    pathfinder.setCallbackFunction(callBackFindPath);
-    pathfinder.setGrid(pathLayer.layer.data, walkables, null);
-    pathfinder.preparePathCalculation([startTileX,startTileY], [endTileX,endTileY]);
-    pathfinder.calculatePath();
-}
-
-function callBackFindPath(path) {
-    pathSprite = [];
-    path = path || [];
-    for(var i = 0, ilen = path.length; i < ilen; i++) {
-        map.putTile(168, path[i].x, path[i].y, layer);
-        pathSprite[i] = new Phaser.Point(path[i].x * 32, path[i].y * 32);
-        pathSprite[i].tileX = path[i].x;
-        pathSprite[i].tileY = path[i].y;
-    }
-    unBlockSpriteSpeed();
-}
-
- function distanceBetween(source, target) {
-     this._dx = Math.abs(source.x - target.x);
-     this._dy = Math.abs(source.y - target.y);
-     
-     return Math.sqrt(this._dx * this._dx + this._dy * this._dy);
-}
- 
-function update() {
-    
-        //game.physics.collide(sprite, pathLayer, collisionHandler, null, this);
-    if (isBlocked) {
-        sprite.body.speed.x = 0;
-        sprite.body.speed.y = 0;
+    if (nextPoint) {
+      this.game.physics.moveToObject(this.sprite, this.pathSprite[0], 60);
     } else {
-        if (pathSprite.length) {
+        this.sprite.body.velocity.x = 0;
+        this.sprite.body.velocity.y = 0;
+    } 
+  }, 
+  render: function () {
+    if (this.sprite) {
+        this.game.debug.renderSpriteInfo(this.sprite, 32, 32);    
+    }      
+  },
+  addNewBlock: function () {
+    this.block = this.game.add.sprite(22*32, 15*32, 'block');
+    this.block.body.collideWorldBounds = true;
+    this.block.inputEnabled = true;
 
-            var distance = Math.floor(game.physics.distanceBetween(sprite, pathSprite[0]));
-
-            if (distance <= 1) {
-
-                pathSprite.splice(0, 1);
-                console.log(pathSprite.length);
-                if (pathSprite.length) {
-                    console.log('move...');
-                    game.physics.moveToObject(sprite, pathSprite[0]);
-                }
-            }
-        } else {
-            if (sprite) {
-                sprite.destroy();
-                sprite = null;
-            }
-        }        
-    }
-}
+    // Make this item draggable.
+    this.block.input.enableDrag();
     
-function collisionHandler (o1, o2) {
-
-
-}
-
-function render() {
-    if (sprite) {
-        game.debug.renderSpriteInfo(sprite, 32, 32);    
-    }
+    // Then we make it snap to left and right side,
+    // also we make it only snap when released.
+    this.block.input.enableSnap(32, 32, false, true);
+    var self = this;
+    // Limit drop location to only the 2 columns.
+    this.block.events.onDragStop.add(function (item) {
+      var tile = self.map.getTileWorldXY(item.x, item.y, 32, 32, self.pathLayer);
+      self.map.putTile(16, tile.x, tile.y, self.pathLayer);
+      self.map.putTile(16, tile.x, tile.y, self.layer);
+      //check if the path is blocked
+      if(_.findWhere(self.pathSprite, { tileX: tile.x, tileY: tile.y })) {
+          //console.log('new path-> from x='+pathSprite[0].tileX+' y='+pathSprite[0].tileY+' TO x=24 y=13');
+          self.findPathTo(self.pathSprite[0].tileX, self.pathSprite[0].tileY, 24, 13);    
+      }
+    });
+    //block.events.onDragStart(fixLocation);
+  },
+  blockSpriteSpeed: function () {
+    this.isBlocked = true;
+  },
+  findPathTo: function (startTileX, startTileY, endTileX, endTileY) {
+    var walkables = [80];
+    this.blockSpriteSpeed();
     
-}
-
-
+    var self = this;
+    this.pathfinder.setCallbackFunction(function (path) {
+      self.pathSprite = [];
+      path = path || [];
+      for(var i = 0, ilen = path.length; i < ilen; i++) {
+          self.map.putTile(168, path[i].x, path[i].y, self.layer);
+          self.pathSprite[i] = new Phaser.Point(path[i].x * 32, path[i].y * 32);
+          self.pathSprite[i].tileX = path[i].x;
+          self.pathSprite[i].tileY = path[i].y;
+      }
+      self.isBlocked = false;
+    });
+    this.pathfinder.setGrid(this.pathLayer.layer.data, walkables, null);
+    this.pathfinder.preparePathCalculation([startTileX,startTileY], [endTileX,endTileY]);
+    this.pathfinder.calculatePath();
+  }
+};
