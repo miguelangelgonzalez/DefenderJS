@@ -1,58 +1,3 @@
-var Enemy = function(game, x, y, key) {
-    Phaser.Sprite.call(this, game, x, y, key);
-    game.add.existing(this);
-    this.body.collideWorldBounds = true;
-    this.pathTiles = [];
-    this.startTileX = x / 32;
-    this.startTileY = y / 32;
-    this.endTileX = 0;
-    this.endTileY = 0;
-    this.isBlocked = false;
-};
-Enemy.prototype.constructor = Enemy;
-
-Enemy.prototype = Object.create(Phaser.Sprite.prototype);
-
-Enemy.prototype.setTargetTile = function (endTileX, endTileY) {
-    this.endTileX = endTileX;
-    this.endTileY = endTileY;
-};
-
-Enemy.prototype.getCurrentTile = function () {
-  var currentTile;
-  if (this.pathTiles.length) {
-    currentTile = this.pathTiles[0];  
-  }else{
-    currentTile = { tileX: this.startTileX, tileY: this.startTileY };
-  }
-  return currentTile;
-};
-
-Enemy.prototype.moveToNextTile = function (){
-  this.game.physics.moveToObject(this, this.pathTiles[0]);  
-};
-
-Enemy.prototype.updateMovement = function (){
-  if (!this.isBlocked){
-    var nextTile = this.pathTiles[0];
-
-    while(nextTile)
-    {
-      if (this.game.physics.distanceBetween(nextTile, this) > 1) break;
-      this.pathTiles = this.pathTiles.splice(1);
-      nextTile = this.pathTiles[0];
-    }
-
-    if (nextTile) {
-      this.moveToNextTile();
-    } else {
-        this.body.velocity.x = 0;
-        this.body.velocity.y = 0;
-    }
-  }   
-};
- 
-
 BasicGame.Game = function (game) {
   this.map;
   this.pathfinder;
@@ -73,23 +18,30 @@ BasicGame.Game.prototype = {
 
     for (var i = 0; i < 4; i++) {
       var y = (32 * i) + 320;
-      var enemy = new Enemy(this.game, 0, y, 'cubo');
+      var enemy = new BasicGame.Enemy(this.game, 0, y, 'cubo');
       enemy.setTargetTile(24, 13);
+      this.findPathFor(enemy);
+      enemy.moveToNextTile();
+
       this.enemies[i] =  enemy;  
     };
-
-    var self = this;
-    _.each(this.enemies, function (enemy) {  
-      self.findPathFor(enemy);
-      enemy.moveToNextTile();
-    });
 
     this.addNewBlock();
   },
   update: function () {
-    _.each(this.enemies, function (enemy) {
-      enemy.updateMovement();
-    });
+    for (var i = 0; i < this.enemies.length; i++) {
+      var enemy = this.enemies[i];
+      if(enemy.arrivedHome()) {
+        enemy.destroy();
+        this.enemies.splice(i,1);
+      } else {
+        enemy.updateMovement(); 
+      }
+    }
+
+    /*if(!this.enemies.length){
+      this.destroy();
+    }*/
   }, 
 /*  render: function () {
     if (this.sprite) {
@@ -114,11 +66,13 @@ BasicGame.Game.prototype = {
       self.map.putTile(16, tile.x, tile.y, self.pathLayer);
       self.map.putTile(16, tile.x, tile.y, self.layer);
       
-      _.each(self.enemies, function (enemy){
-        if(_.findWhere(enemy.pathTiles, { tileX: tile.x, tileY: tile.y })) {
-          self.findPathFor(enemy);    
+      var tile = { tileX: tile.x, tileY: tile.y };
+      for (var i = 0; i < self.enemies.length; i++) {
+        var enemy = self.enemies[i];
+        if(enemy.pathIsBlockedBy(tile)){
+          self.findPathFor(enemy);  
         }
-      });
+      };
     });
     //block.events.onDragStart(fixLocation);
   },
@@ -130,15 +84,15 @@ BasicGame.Game.prototype = {
     this.pathfinder.setGrid(this.pathLayer.layer.data, walkables, null);
     
     this.pathfinder.setCallbackFunction(function (path) {
-      var newPath = [];
+      var newPathTiles = [];
       path = path || [];
       for(var i = 0, ilen = path.length; i < ilen; i++) {
           self.map.putTile(168, path[i].x, path[i].y, self.layer);
-          newPath[i] = new Phaser.Point(path[i].x * 32, path[i].y * 32);
-          newPath[i].tileX = path[i].x;
-          newPath[i].tileY = path[i].y;
+          newPathTiles[i] = new Phaser.Point(path[i].x * 32, path[i].y * 32);
+          newPathTiles[i].tileX = path[i].x;
+          newPathTiles[i].tileY = path[i].y;
       }
-      sprite.pathTiles = newPath;
+      sprite.pathTiles = newPathTiles;
       sprite.isBlocked = false;
     });
 
