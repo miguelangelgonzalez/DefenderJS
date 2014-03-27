@@ -22,27 +22,27 @@ BasicGame.Boot.prototype = {
     this.game.stage.disableVisibilityChange = false;
 
     if (this.game.device.desktop) {
-      this.game.stage.scaleMode = Phaser.StageScaleMode.SHOW_ALL;
-      this.game.stage.scale.minWidth = 480;
-      this.game.stage.scale.minHeight = 260;
-      this.game.stage.scale.maxWidth = 1024;
-      this.game.stage.scale.maxHeight = 768;
-      this.game.stage.scale.pageAlignHorizontally = true;
-      this.game.stage.scale.pageAlignVertically = true;
-      this.game.stage.scale.setScreenSize(true);
+      this.game.scaleMode =  Phaser.ScaleManager.SHOW_ALL;
+      this.game.scale.minWidth = 480;
+      this.game.scale.minHeight = 260;
+      this.game.scale.maxWidth = 800;
+      this.game.scale.maxHeight = 600;
+      this.game.scale.pageAlignHorizontally = true;
+      this.game.scale.pageAlignVertically = true;
+      this.game.scale.setScreenSize(true);
     } else {
-      this.game.stage.scaleMode = Phaser.StageScaleMode.SHOW_ALL;
-      this.game.stage.scale.minWidth = 480;
-      this.game.stage.scale.minHeight = 260;
-      this.game.stage.scale.maxWidth = 1024;
-      this.game.stage.scale.maxHeight = 768;
-      this.game.stage.scale.pageAlignHorizontally = true;
-      this.game.stage.scale.pageAlignVertically = true;
-      this.game.stage.scale.forceOrientation(true, false);
-      this.game.stage.scale.hasResized.add(this.gameResized, this);
-      this.game.stage.scale.enterIncorrectOrientation.add(this.enterIncorrectOrientation, this);
-      this.game.stage.scale.leaveIncorrectOrientation.add(this.leaveIncorrectOrientation, this);
-      this.game.stage.scale.setScreenSize(true);
+      this.game.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+      this.game.scale.minWidth = 480;
+      this.game.scale.minHeight = 260;
+      this.game.scale.maxWidth = 800;
+      this.game.scale.maxHeight = 600;
+      this.game.scale.pageAlignHorizontally = true;
+      this.game.scale.pageAlignVertically = true;
+      this.game.scale.forceOrientation(true, false);
+      this.game.scale.hasResized.add(this.gameResized, this);
+      this.game.scale.enterIncorrectOrientation.add(this.enterIncorrectOrientation, this);
+      this.game.scale.leaveIncorrectOrientation.add(this.leaveIncorrectOrientation, this);
+      this.game.scale.setScreenSize(true);
     }
 
     this.game.state.start('Preloader');

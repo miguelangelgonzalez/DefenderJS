@@ -9,6 +9,8 @@ BasicGame.Game = function (game) {
 
 BasicGame.Game.prototype = {
   create: function () {
+    this.game.physics.startSystem(Phaser.Physics.ARCADE);
+
     this.pathfinder = this.game.plugins.add(Phaser.Plugin.PathFinderPlugin);
     this.map = this.game.add.tilemap('map');
     this.map.addTilesetImage('Lost_Garden');
@@ -50,7 +52,7 @@ BasicGame.Game.prototype = {
   },*/
   addNewBlock: function () {
     this.block = this.game.add.sprite(22*32, 15*32, 'block');
-    this.block.body.collideWorldBounds = true;
+    //this.block.body.collideWorldBounds = true;
     this.block.inputEnabled = true;
 
     // Make this item draggable.

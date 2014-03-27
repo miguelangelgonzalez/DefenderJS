@@ -1,7 +1,8 @@
 BasicGame.Enemy = function(game, x, y, key) {
     Phaser.Sprite.call(this, game, x, y, key);
     game.add.existing(this);
-    this.body.collideWorldBounds = true;
+    game.physics.enable(this);
+    //this.body.collideWorldBounds = true;
     this.pathTiles = [];
     this.startTileX = x / 32;
     this.startTileY = y / 32;
@@ -29,7 +30,7 @@ BasicGame.Enemy.prototype.getCurrentTile = function () {
 };
 
 BasicGame.Enemy.prototype.moveToNextTile = function (){
-  this.game.physics.moveToObject(this, this.pathTiles[0]);  
+  this.game.physics.arcade.moveToObject(this, this.pathTiles[0]);  
 };
 
 BasicGame.Enemy.prototype.updateMovement = function (){
@@ -38,7 +39,7 @@ BasicGame.Enemy.prototype.updateMovement = function (){
 
     while(nextTile)
     {
-      if (this.game.physics.distanceBetween(nextTile, this) > 1) break;
+      if (this.game.physics.arcade.distanceBetween(nextTile, this) > 1) break;
       this.pathTiles = this.pathTiles.splice(1);
       nextTile = this.pathTiles[0];
     }
@@ -65,6 +66,6 @@ BasicGame.Enemy.prototype.pathIsBlockedBy = function (tile) {
       break;
     }
   }
-  
+
   return pathBlocked;
 }
