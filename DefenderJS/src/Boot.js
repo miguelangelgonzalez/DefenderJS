@@ -6,7 +6,11 @@ BasicGame = {
   level: 0,
 
   // Your game can check BasicGame.orientated in internal loops to know if it should pause or not
-  orientated: false
+  orientated: false,
+
+  tileWidth: 32,
+
+  tileHeight: 32
 };
 
 BasicGame.Boot = function (game) {

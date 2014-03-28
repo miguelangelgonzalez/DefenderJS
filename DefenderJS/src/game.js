@@ -18,15 +18,13 @@ BasicGame.Game.prototype = {
     this.pathLayer = this.map.createLayer('bounds');  
     this.layer = this.map.createLayer('background');  
 
-    for (var i = 0; i < 4; i++) {
-      var y = (32 * i) + 320;
-      var enemy = new BasicGame.Enemy(this.game, 0, y, 'cubo');
-      enemy.setTargetTile(24, 13);
-      this.findPathFor(enemy);
+    var self = this;
+    this.game.time.events.repeat(Phaser.Timer.SECOND * 2, 4, function () {
+      var enemy = new BasicGame.Enemy(self.game, 0, 320, 'cubo', { tileX: 24, tileY: 10});
+      self.findPathFor(enemy);
       enemy.moveToNextTile();
-
-      this.enemies[i] =  enemy;  
-    };
+      self.enemies.push(enemy);  
+    }, this);
 
     this.addNewBlock();
   },
@@ -35,15 +33,11 @@ BasicGame.Game.prototype = {
       var enemy = this.enemies[i];
       if(enemy.arrivedHome()) {
         enemy.destroy();
-        this.enemies.splice(i,1);
+        this.enemies.splice(i, 1);
       } else {
         enemy.updateMovement(); 
       }
     }
-
-    /*if(!this.enemies.length){
-      this.destroy();
-    }*/
   }, 
 /*  render: function () {
     if (this.sprite) {
@@ -65,15 +59,16 @@ BasicGame.Game.prototype = {
     // Limit drop location to only the 2 columns.
     this.block.events.onDragStop.add(function (item) {
       var tile = self.map.getTileWorldXY(item.x, item.y, 32, 32, self.pathLayer);
+      tile.tileX = tile.x;
+      tile.tileY = tile.y;
+      
       self.map.putTile(16, tile.x, tile.y, self.pathLayer);
       self.map.putTile(16, tile.x, tile.y, self.layer);
       
-      var tile = { tileX: tile.x, tileY: tile.y };
       for (var i = 0; i < self.enemies.length; i++) {
         var enemy = self.enemies[i];
-        if(enemy.pathIsBlockedBy(tile)){
-          self.findPathFor(enemy);  
-        }
+
+        if(enemy.pathIsBlockedBy(tile)) self.findPathFor(enemy);  
       };
     });
     //block.events.onDragStart(fixLocation);
@@ -89,7 +84,7 @@ BasicGame.Game.prototype = {
       var newPathTiles = [];
       path = path || [];
       for(var i = 0, ilen = path.length; i < ilen; i++) {
-          self.map.putTile(168, path[i].x, path[i].y, self.layer);
+          //self.map.putTile(168, path[i].x, path[i].y, self.layer);
           newPathTiles[i] = new Phaser.Point(path[i].x * 32, path[i].y * 32);
           newPathTiles[i].tileX = path[i].x;
           newPathTiles[i].tileY = path[i].y;
